@@ -1,4 +1,5 @@
-import { useState } from "react";
+import Select from "react-select";
+import type { SingleValue } from "react-select";
 
 type Mode = "vehRef" | "line";
 
@@ -27,6 +28,8 @@ type ControlPanelProps = {
     onRetryInit: () => void;
 };
 
+type Option = { value: string; label: string };
+
 export function ControlPanel({
     mode,
     onModeChange,
@@ -51,33 +54,29 @@ export function ControlPanel({
                 ? "Server is ready"
                 : "Server error";
 
-    // Search state for each list
-    const [vehSearch, setVehSearch] = useState("");
-    const [lineSearch, setLineSearch] = useState("");
+    const vehOptions: Option[] = vehRefs.map((v) => ({
+        value: v,
+        label: v,
+    }));
 
-    const normalize = (s: string) => s.trim().toLowerCase();
+    const lineOptions: Option[] = lineNames.map((name) => ({
+        value: name,
+        label: name,
+    }));
 
-    const vehFilter = normalize(vehSearch);
-    const lineFilter = normalize(lineSearch);
+    const selectedVehOption =
+        vehOptions.find((o) => o.value === selectedVehRef) || null;
 
-    const filteredVehRefs =
-        vehFilter.length === 0
-            ? vehRefs
-            : vehRefs.filter((v) =>
-                v.toLowerCase().includes(vehFilter)
-            );
+    const selectedLineOption =
+        lineOptions.find((o) => o.value === selectedLineName) || null;
 
-    const filteredLineNames =
-        lineFilter.length === 0
-            ? lineNames
-            : lineNames.filter((name) =>
-                name.toLowerCase().includes(lineFilter)
-            );
+    const handleVehChange = (opt: SingleValue<Option>) => {
+        onSelectedVehRefChange(opt?.value ?? "");
+    };
 
-    const showVehMatchInfo =
-        mode === "vehRef" && vehRefs.length > 0;
-    const showLineMatchInfo =
-        mode === "line" && lineNames.length > 0;
+    const handleLineChange = (opt: SingleValue<Option>) => {
+        onSelectedLineNameChange(opt?.value ?? "");
+    };
 
     return (
         <div className="sidebar">
@@ -136,94 +135,59 @@ export function ControlPanel({
                 )}
 
                 {mode === "vehRef" && (
-                    <>
-                        <input
-                            className="search-input"
-                            type="text"
-                            placeholder="Search vehicle refs…"
-                            value={vehSearch}
-                            onChange={(e) => setVehSearch(e.target.value)}
-                            disabled={isListsLoading || vehRefs.length === 0}
-                        />
-                        <select
-                            className="select"
-                            value={selectedVehRef}
-                            onChange={(e) =>
-                                onSelectedVehRefChange(e.target.value)
+                    <div style={{ marginTop: 4 }}>
+                        <Select<Option, false>
+                            classNamePrefix="bus-select"
+                            options={vehOptions}
+                            value={selectedVehOption}
+                            onChange={handleVehChange}
+                            isLoading={isListsLoading}
+                            isDisabled={
+                                isListsLoading || vehOptions.length === 0
                             }
-                            disabled={
-                                isListsLoading || filteredVehRefs.length === 0
-                            }
-                        >
-                            <option value="">
-                                {vehRefs.length === 0
+                            placeholder={
+                                vehOptions.length === 0
                                     ? "No vehicle refs available"
-                                    : filteredVehRefs.length === 0
-                                        ? "No matches"
-                                        : "Select a VehicleRef"}
-                            </option>
-                            {filteredVehRefs.map((v) => (
-                                <option key={v} value={v}>
-                                    {v}
-                                </option>
-                            ))}
-                        </select>
-                        {showVehMatchInfo && (
-                            <p className="hint">
-                                {filteredVehRefs.length} of {vehRefs.length}{" "}
-                                vehicle ref
-                                {vehRefs.length !== 1 ? "s" : ""} match
-                                {filteredVehRefs.length === 1 ? "es" : ""} your
-                                search.
+                                    : "Search & select a VehicleRef"
+                            }
+                            isClearable
+                        />
+                        {vehOptions.length > 0 && (
+                            <p className="hint" style={{ marginTop: 4 }}>
+                                Start typing to filter{" "}
+                                {vehOptions.length} vehicle ref
+                                {vehOptions.length !== 1 ? "s" : ""}.
                             </p>
                         )}
-                    </>
+                    </div>
                 )}
 
                 {mode === "line" && (
-                    <>
-                        <input
-                            className="search-input"
-                            type="text"
-                            placeholder="Search line names…"
-                            value={lineSearch}
-                            onChange={(e) => setLineSearch(e.target.value)}
-                            disabled={isListsLoading || lineNames.length === 0}
-                        />
-                        <select
-                            className="select"
-                            value={selectedLineName}
-                            onChange={(e) =>
-                                onSelectedLineNameChange(e.target.value)
+                    <div style={{ marginTop: 4 }}>
+                        <Select<Option, false>
+                            classNamePrefix="bus-select"
+                            options={lineOptions}
+                            value={selectedLineOption}
+                            onChange={handleLineChange}
+                            isLoading={isListsLoading}
+                            isDisabled={
+                                isListsLoading || lineOptions.length === 0
                             }
-                            disabled={
-                                isListsLoading ||
-                                filteredLineNames.length === 0
-                            }
-                        >
-                            <option value="">
-                                {lineNames.length === 0
+                            placeholder={
+                                lineOptions.length === 0
                                     ? "No line names available"
-                                    : filteredLineNames.length === 0
-                                        ? "No matches"
-                                        : "Select a line (e.g. Bx2)"}
-                            </option>
-                            {filteredLineNames.map((name) => (
-                                <option key={name} value={name}>
-                                    {name}
-                                </option>
-                            ))}
-                        </select>
-                        {showLineMatchInfo && (
-                            <p className="hint">
-                                {filteredLineNames.length} of {lineNames.length}{" "}
-                                line name
-                                {lineNames.length !== 1 ? "s" : ""} match
-                                {filteredLineNames.length === 1 ? "es" : ""} your
-                                search.
+                                    : "Search & select a line (e.g. Bx2)"
+                            }
+                            isClearable
+                        />
+                        {lineOptions.length > 0 && (
+                            <p className="hint" style={{ marginTop: 4 }}>
+                                Start typing to filter{" "}
+                                {lineOptions.length} line name
+                                {lineOptions.length !== 1 ? "s" : ""}.
                             </p>
                         )}
-                    </>
+                    </div>
                 )}
             </section>
 
