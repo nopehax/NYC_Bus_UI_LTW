@@ -12,7 +12,31 @@ import {
 import { BusTripMap } from "./components/BusTripMap";
 import { ControlPanel } from "./components/ControlPanel";
 
+const STORAGE_KEY = "nyc-bus-ui-state";
 type Mode = "vehRef" | "line";
+
+type PersistedUiState = {
+  mode: Mode;
+  selectedVehRef: string;
+  selectedLineName: string;
+};
+
+function loadPersistedState(): PersistedUiState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PersistedUiState>;
+    if (!parsed) return null;
+    return {
+      mode: parsed.mode === "line" ? "line" : "vehRef",
+      selectedVehRef: parsed.selectedVehRef ?? "",
+      selectedLineName: parsed.selectedLineName ?? "",
+    };
+  } catch {
+    return null;
+  }
+}
 
 export default function App() {
   const latestRequestIdRef = useRef(0);
@@ -29,9 +53,18 @@ export default function App() {
   const [isListsLoading, setIsListsLoading] = useState(false);
   const [listsError, setListsError] = useState<string | null>(null);
 
-  const [mode, setMode] = useState<Mode>("vehRef");
-  const [selectedVehRef, setSelectedVehRef] = useState("");
-  const [selectedLineName, setSelectedLineName] = useState("");
+  const [mode, setMode] = useState<Mode>(() => {
+    const saved = loadPersistedState();
+    return saved?.mode ?? "vehRef";
+  });
+  const [selectedVehRef, setSelectedVehRef] = useState(() => {
+    const saved = loadPersistedState();
+    return saved?.selectedVehRef ?? "";
+  });
+  const [selectedLineName, setSelectedLineName] = useState(() => {
+    const saved = loadPersistedState();
+    return saved?.selectedLineName ?? "";
+  });
 
   const [tripData, setTripData] =
     useState<GeoJsonFeatureCollection | null>(null);
@@ -63,12 +96,22 @@ export default function App() {
       setLineNames(lineNameList);
       setIsListsLoading(false);
 
-      // Optional: preselect first values
+      // Only fall back to the first option if the current selection is
+      // empty OR not found in the new list.
       if (vehRefList.length > 0) {
-        setSelectedVehRef(vehRefList[0]);
+        setSelectedVehRef((prev) =>
+          prev && vehRefList.includes(prev) ? prev : vehRefList[0]
+        );
+      } else {
+        setSelectedVehRef("");
       }
+
       if (lineNameList.length > 0) {
-        setSelectedLineName(lineNameList[0]);
+        setSelectedLineName((prev) =>
+          prev && lineNameList.includes(prev) ? prev : lineNameList[0]
+        );
+      } else {
+        setSelectedLineName("");
       }
     } catch (err: any) {
       setServerStatus("error");
@@ -82,6 +125,17 @@ export default function App() {
   useEffect(() => {
     void initialise();
   }, [initialise]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const toSave: PersistedUiState = {
+      mode,
+      selectedVehRef,
+      selectedLineName,
+    };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  }, [mode, selectedVehRef, selectedLineName]);
+
 
   useEffect(() => {
     if (serverStatus !== "ready") return;
