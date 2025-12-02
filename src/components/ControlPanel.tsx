@@ -1,4 +1,4 @@
-// src/components/ControlPanel.tsx
+import { useState } from "react";
 
 type Mode = "vehRef" | "line";
 
@@ -50,6 +50,34 @@ export function ControlPanel({
             : serverStatus === "ready"
                 ? "Server is ready"
                 : "Server error";
+
+    // Search state for each list
+    const [vehSearch, setVehSearch] = useState("");
+    const [lineSearch, setLineSearch] = useState("");
+
+    const normalize = (s: string) => s.trim().toLowerCase();
+
+    const vehFilter = normalize(vehSearch);
+    const lineFilter = normalize(lineSearch);
+
+    const filteredVehRefs =
+        vehFilter.length === 0
+            ? vehRefs
+            : vehRefs.filter((v) =>
+                v.toLowerCase().includes(vehFilter)
+            );
+
+    const filteredLineNames =
+        lineFilter.length === 0
+            ? lineNames
+            : lineNames.filter((name) =>
+                name.toLowerCase().includes(lineFilter)
+            );
+
+    const showVehMatchInfo =
+        mode === "vehRef" && vehRefs.length > 0;
+    const showLineMatchInfo =
+        mode === "line" && lineNames.length > 0;
 
     return (
         <div className="sidebar">
@@ -108,51 +136,94 @@ export function ControlPanel({
                 )}
 
                 {mode === "vehRef" && (
-                    <select
-                        className="select"
-                        value={selectedVehRef}
-                        onChange={(e) =>
-                            onSelectedVehRefChange(e.target.value)
-                        }
-                        disabled={
-                            isListsLoading || vehRefs.length === 0
-                        }
-                    >
-                        <option value="">
-                            {vehRefs.length === 0
-                                ? "No vehicle refs available"
-                                : "Select a VehicleRef"}
-                        </option>
-                        {vehRefs.map((v) => (
-                            <option key={v} value={v}>
-                                {v}
+                    <>
+                        <input
+                            className="search-input"
+                            type="text"
+                            placeholder="Search vehicle refs…"
+                            value={vehSearch}
+                            onChange={(e) => setVehSearch(e.target.value)}
+                            disabled={isListsLoading || vehRefs.length === 0}
+                        />
+                        <select
+                            className="select"
+                            value={selectedVehRef}
+                            onChange={(e) =>
+                                onSelectedVehRefChange(e.target.value)
+                            }
+                            disabled={
+                                isListsLoading || filteredVehRefs.length === 0
+                            }
+                        >
+                            <option value="">
+                                {vehRefs.length === 0
+                                    ? "No vehicle refs available"
+                                    : filteredVehRefs.length === 0
+                                        ? "No matches"
+                                        : "Select a VehicleRef"}
                             </option>
-                        ))}
-                    </select>
+                            {filteredVehRefs.map((v) => (
+                                <option key={v} value={v}>
+                                    {v}
+                                </option>
+                            ))}
+                        </select>
+                        {showVehMatchInfo && (
+                            <p className="hint">
+                                {filteredVehRefs.length} of {vehRefs.length}{" "}
+                                vehicle ref
+                                {vehRefs.length !== 1 ? "s" : ""} match
+                                {filteredVehRefs.length === 1 ? "es" : ""} your
+                                search.
+                            </p>
+                        )}
+                    </>
                 )}
 
                 {mode === "line" && (
-                    <select
-                        className="select"
-                        value={selectedLineName}
-                        onChange={(e) =>
-                            onSelectedLineNameChange(e.target.value)
-                        }
-                        disabled={
-                            isListsLoading || lineNames.length === 0
-                        }
-                    >
-                        <option value="">
-                            {lineNames.length === 0
-                                ? "No line names available"
-                                : "Select a line (e.g. Bx2)"}
-                        </option>
-                        {lineNames.map((name) => (
-                            <option key={name} value={name}>
-                                {name}
+                    <>
+                        <input
+                            className="search-input"
+                            type="text"
+                            placeholder="Search line names…"
+                            value={lineSearch}
+                            onChange={(e) => setLineSearch(e.target.value)}
+                            disabled={isListsLoading || lineNames.length === 0}
+                        />
+                        <select
+                            className="select"
+                            value={selectedLineName}
+                            onChange={(e) =>
+                                onSelectedLineNameChange(e.target.value)
+                            }
+                            disabled={
+                                isListsLoading ||
+                                filteredLineNames.length === 0
+                            }
+                        >
+                            <option value="">
+                                {lineNames.length === 0
+                                    ? "No line names available"
+                                    : filteredLineNames.length === 0
+                                        ? "No matches"
+                                        : "Select a line (e.g. Bx2)"}
                             </option>
-                        ))}
-                    </select>
+                            {filteredLineNames.map((name) => (
+                                <option key={name} value={name}>
+                                    {name}
+                                </option>
+                            ))}
+                        </select>
+                        {showLineMatchInfo && (
+                            <p className="hint">
+                                {filteredLineNames.length} of {lineNames.length}{" "}
+                                line name
+                                {lineNames.length !== 1 ? "s" : ""} match
+                                {filteredLineNames.length === 1 ? "es" : ""} your
+                                search.
+                            </p>
+                        )}
+                    </>
                 )}
             </section>
 
