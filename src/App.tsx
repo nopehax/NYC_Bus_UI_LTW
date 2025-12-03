@@ -197,28 +197,29 @@ export default function App() {
       </header>
 
       <div className="app-body">
-        <ControlPanel
-          mode={mode}
-          onModeChange={handleModeChange}
-          vehRefs={vehRefs}
-          lineNames={lineNames}
-          selectedVehRef={selectedVehRef}
-          onSelectedVehRefChange={setSelectedVehRef}
-          selectedLineName={selectedLineName}
-          onSelectedLineNameChange={setSelectedLineName}
-          serverStatus={serverStatus}
-          serverError={serverError}
-          isListsLoading={isListsLoading}
-          listsError={listsError}
-          isTripLoading={isTripLoading}
-          tripError={tripError}
-          onRetryInit={initialise}
-        />
-
         <div className="map-container">
           <BusTripMap
             data={tripData}
             isTripLoading={isTripLoading}
+            overlay={
+              <ControlPanel
+                mode={mode}
+                onModeChange={handleModeChange}
+                vehRefs={vehRefs}
+                lineNames={lineNames}
+                selectedVehRef={selectedVehRef}
+                onSelectedVehRefChange={setSelectedVehRef}
+                selectedLineName={selectedLineName}
+                onSelectedLineNameChange={setSelectedLineName}
+                serverStatus={serverStatus}
+                serverError={serverError}
+                isListsLoading={isListsLoading}
+                listsError={listsError}
+                isTripLoading={isTripLoading}
+                tripError={tripError}
+                onRetryInit={initialise}
+              />
+            }
           />
         </div>
       </div>

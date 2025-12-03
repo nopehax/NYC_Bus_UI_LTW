@@ -6,6 +6,7 @@ import L from "leaflet";
 type BusTripMapProps = {
     data: GeoJsonFeatureCollection | null;
     isTripLoading: boolean;
+    overlay?: React.ReactNode;
 };
 
 function TripLayer({ data }: { data: GeoJsonFeatureCollection | null }) {
@@ -46,7 +47,7 @@ function TripLayer({ data }: { data: GeoJsonFeatureCollection | null }) {
     return null;
 }
 
-export function BusTripMap({ data, isTripLoading }: BusTripMapProps) {
+export function BusTripMap({ data, isTripLoading, overlay }: BusTripMapProps) {
     const defaultCenter: [number, number] = [40.7128, -74.006];
 
     return (
@@ -65,6 +66,12 @@ export function BusTripMap({ data, isTripLoading }: BusTripMapProps) {
                 <TripLayer data={data} />
             </MapContainer>
 
+            {overlay && (
+                <div className="overlay-panel">
+                    {overlay}
+                </div>
+            )}
+
             {!data && !isTripLoading && (
                 <div className="map-empty-overlay">
                     <p>Select a vehicle or line to view its trip.</p>
@@ -79,3 +86,4 @@ export function BusTripMap({ data, isTripLoading }: BusTripMapProps) {
         </div>
     );
 }
+

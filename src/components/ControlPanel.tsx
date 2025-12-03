@@ -79,8 +79,8 @@ export function ControlPanel({
     };
 
     return (
-        <div className="sidebar">
-            <h1 className="app-title">NYC Bus Trip Explorer</h1>
+        <>
+            <h1 className="overlay-title">NYC Bus Trip Explorer</h1>
 
             <div
                 className={`server-status server-status-${serverStatus}`}
@@ -224,6 +224,6 @@ export function ControlPanel({
                         </p>
                     )}
             </section>
-        </div>
+        </>
     );
 }
