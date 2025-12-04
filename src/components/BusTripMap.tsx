@@ -9,6 +9,12 @@ type BusTripMapProps = {
     overlay?: React.ReactNode;
 };
 
+// Custom icon for bus points (clickable marker)
+const busPointIcon = L.divIcon({
+    className: "bus-point-icon",
+    iconSize: [14, 14],
+});
+
 function TripLayer({ data }: { data: GeoJsonFeatureCollection | null }) {
     const map = useMap();
     const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
@@ -19,10 +25,10 @@ function TripLayer({ data }: { data: GeoJsonFeatureCollection | null }) {
         // lazily create the layer once and reuse it
         if (!geoJsonLayerRef.current) {
             geoJsonLayerRef.current = L.geoJSON(undefined, {
+                // Use a proper marker for points so they stand out more
                 pointToLayer: (_feature, latlng) =>
-                    L.circleMarker(latlng, {
-                        radius: 4,
-                        weight: 1,
+                    L.marker(latlng, {
+                        icon: busPointIcon,
                     }),
                 style: () => ({
                     weight: 3,
@@ -36,6 +42,38 @@ function TripLayer({ data }: { data: GeoJsonFeatureCollection | null }) {
         if (!data) return;
 
         layer.addData(data as any);
+
+        // Attach a popup to each feature so clicking on a
+        // point or line shows its main properties.
+        layer.eachLayer((leafletLayer: any) => {
+            const feature = leafletLayer.feature as any;
+            const props = feature?.properties || {};
+
+            const infoLines: string[] = [];
+            const add = (label: string, key: string) => {
+                const value = props[key];
+                if (value !== undefined && value !== null && value !== "") {
+                    infoLines.push(
+                        `<strong>${label}:</strong> ${String(value)}`
+                    );
+                }
+            };
+
+            add("Vehicle", "VehicleRef");
+            add("Line", "PublishedLineName");
+            add("Direction", "DirectionRef");
+            add("From", "OriginName");
+            add("To", "DestinationName");
+            add("Start", "StartTime");
+            add("End", "EndTime");
+
+            const html =
+                infoLines.length > 0
+                    ? infoLines.join("<br/>")
+                    : "<em>No feature properties available</em>";
+
+            leafletLayer.bindPopup(html);
+        });
 
         const bounds = layer.getBounds();
         if (bounds.isValid()) {
@@ -66,11 +104,7 @@ export function BusTripMap({ data, isTripLoading, overlay }: BusTripMapProps) {
                 <TripLayer data={data} />
             </MapContainer>
 
-            {overlay && (
-                <div className="overlay-panel">
-                    {overlay}
-                </div>
-            )}
+            {overlay && <div className="overlay-panel">{overlay}</div>}
 
             {!data && !isTripLoading && (
                 <div className="map-empty-overlay">
@@ -86,4 +120,3 @@ export function BusTripMap({ data, isTripLoading, overlay }: BusTripMapProps) {
         </div>
     );
 }
-

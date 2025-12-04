@@ -221,7 +221,7 @@ export function ControlPanel({
                         {vehOptions.length > 0 && (
                             <p className="hint" style={{ marginTop: 4 }}>
                                 {vehTotalMatches > vehVisibleCount
-                                    ? `Showing ${vehVisibleCount} of ${vehTotalMatches} matches. Scroll to load more.`
+                                    ? `Showing ${vehVisibleCount} of ${vehTotalMatches} matches.`
                                     : `Found ${vehTotalMatches} vehicle ref${vehTotalMatches !== 1 ? "s" : ""
                                     }.`}
                             </p>
@@ -258,7 +258,7 @@ export function ControlPanel({
                         {lineOptions.length > 0 && (
                             <p className="hint" style={{ marginTop: 4 }}>
                                 {lineTotalMatches > lineVisibleCount
-                                    ? `Showing ${lineVisibleCount} of ${lineTotalMatches} matches. Scroll to load more.`
+                                    ? `Showing ${lineVisibleCount} of ${lineTotalMatches} matches.`
                                     : `Found ${lineTotalMatches} line name${lineTotalMatches !== 1 ? "s" : ""
                                     }.`}
                             </p>
