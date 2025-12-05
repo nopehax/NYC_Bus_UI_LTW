@@ -10,16 +10,20 @@ The app:
   - **By Vehicle Ref** – pick a specific bus (e.g. `NYCT_6617`)
   - **By Line Name** – pick a route (e.g. `Bx2`)
 - Fetches the corresponding trip GeoJSON and plots it on a Leaflet map (points + polylines).
-- Shows basic loading / error states so you know what the app is doing.
+- Shows detailed info when point/polyline is clicked.
 
 ### Tech stack
 
 - Vite + React + TypeScript
 - react-leaflet + Leaflet (map + GeoJSON rendering)
-- Simple `fetch`-based API layer (no backend code in this repo)
+- Simple fetch-based API layer (no backend code in this repo)
 
 ### Running locally
 
 ```bash
 npm install
 npm run dev
+```
+
+### Screenshot
+![demo_screenshot](./docs/demo_screenshot.png)
