@@ -177,7 +177,6 @@ body,
 /* Custom bus point marker (divIcon) */
 .bus-point-icon {
   background: #2563eb;
-  /* blue dot */
   border-radius: 9999px;
   border: 2px solid #ffffff;
   width: 14px;
@@ -189,6 +188,19 @@ body,
 .leaflet-marker-icon.bus-point-icon {
   margin-left: -7px;
   margin-top: -7px;
+}
+
+.map-root .leaflet-interactive {
+  cursor: pointer;
+}
+
+.map-root .leaflet-interactive:hover {
+  stroke: #00FF00;
+  stroke-width: 8px;
+}
+
+.leaflet-marker-icon.bus-point-icon:hover {
+  background: #00ff00;
 }
 
 /* The overlay card */
@@ -210,8 +222,4 @@ body,
 .overlay-title {
   font-size: 13px;
   font-weight: 600;
-}
-
-.map-root .leaflet-interactive {
-  cursor: pointer;
 }
