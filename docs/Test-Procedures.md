@@ -3,10 +3,6 @@
 ## 1. Introduction
 
 This document describes the **test procedures** for the NYC Bus Trip Viewer SPA and its backend API.  
-It is aligned with the:
-
-- Software Interface Agreement (SIA)
-- User Stories US-1 to US-12
 
 The goal is to ensure that:
 
@@ -35,12 +31,6 @@ In scope:
   - `/getBusTripByVehRef/{vehRef}`
   - `/getBusTripByPubLineName/{pubLineName}`
 
-Out of scope (for this document):
-
-- Detailed load/performance testing.
-- Security/penetration testing.
-- Backend data quality beyond “valid GeoJSON and non-empty lists”.
-
 ---
 
 ## 3. Test Environment
@@ -48,18 +38,15 @@ Out of scope (for this document):
 ### 3.1 Software
 
 - **Browser(s):**
-  - Latest Chrome (required)
-  - Latest Firefox (recommended)
+  - Latest Chrome (recommended)
 - **SPA deployment:**
-  - URL, e.g. `https://<your-frontend-url>/` or `http://localhost:3000`
-- **Backend API base URL (as per SIA):**
-  - `https://nyc-bus-engine-k3q4yvzczq-an.a.run.app/api/bus_trip`  
-    (or environment-specific equivalent)
+  - `http://localhost:5173`
+- **Backend API base URL:**
+  - `https://nyc-bus-engine-k3q4yvzczq-an.a.run.app/api/bus_trip`
 
 ### 3.2 Configuration
 
-- Ensure the frontend is configured with the correct **BASE_URL** for the current environment.
-- Ensure CORS is correctly configured on the backend (no CORS-related errors in browser dev tools).
+- Ensure the frontend is configured with the correct **API_URL**.
 
 ### 3.3 Test Data Assumptions
 
@@ -67,7 +54,6 @@ Out of scope (for this document):
 - `/getPubLineName` returns at least several line names (e.g. ≥ 5).
 - At least one `vehRef` and one `pubLineName` return:
   - Valid, non-empty GeoJSON FeatureCollection(s).
-- At least one test case uses invalid inputs or simulates backend failure (e.g. using a test/staging environment that can be configured to fail).
 
 ---
 
@@ -84,19 +70,17 @@ Out of scope (for this document):
 Each test case below includes:
 
 - ID
-- Related User Story
 - Objective
 - Preconditions
 - Steps
 - Expected Result
-
+- Screenshot (if applicable)
 ---
 
 ## 5. Detailed Test Cases
 
 ### TP-01 – Backend readiness check
 
-**Related User Story:** US-1, US-2  
 **Objective:** Verify that the app checks backend readiness on startup and responds appropriately.
 
 **Preconditions:**
@@ -116,36 +100,22 @@ Each test case below includes:
   - The app proceeds to load vehicle and line lists (no error message displayed).
 - If the response is non-200 or `status` ≠ `"Ready"`:
   - The app displays an error indicating the server is not ready or unavailable.
-  - The app does **not** proceed to request lists or trips.
+  - No lists or map data are loaded.
+  - The app shows a `Retry` button for the user to reload the page.
+
+
+**Screenshot:**
+
+Server ready:
+![server ready](screenshots/image.png)
+
+Server not ready:
+![server not ready](screenshots/image-1.png)
 
 ---
 
-### TP-02 – Handle failure to contact server on startup
+### TP-02 – Load vehicle reference list
 
-**Related User Story:** US-2  
-**Objective:** Confirm that the app informs the user when the server cannot be reached.
-
-**Preconditions:**
-
-- Backend is **stopped** or DNS is misconfigured (simulate network failure).
-- SPA is deployed and accessible.
-
-**Steps:**
-
-1. With the backend disabled/unreachable, open the SPA URL.
-2. Wait for the initial load to complete.
-
-**Expected Result:**
-
-- The app attempts to call `/ready` but fails (network error).
-- A clear message is shown indicating the failure, e.g. “Failed to contact server.”
-- No lists or map data are loaded.
-
----
-
-### TP-03 – Load vehicle reference list
-
-**Related User Story:** US-3  
 **Objective:** Verify that the vehicle reference list is requested and displayed.
 
 **Preconditions:**
@@ -165,39 +135,16 @@ Each test case below includes:
 - A single `GET /getVehRef` request is made and returns `200 OK`.
 - The JSON response is an array of strings.
 - The “Vehicle” dropdown displays one option per string in the response.
-- If at least one entry is present:
-  - Either no selection is chosen by default, **or**
-  - The first entry is selected and is visible.
+- If at least one entry is present, the first entry is selected by default.
+
+**Screenshot:**
+
+![vehicle list loaded](screenshots/image-2.png)
 
 ---
 
-### TP-04 – Handle failure when loading vehicle reference list
+### TP-03 – Load public line names list
 
-**Related User Story:** US-3, US-10  
-**Objective:** Confirm that errors loading vehicle references are handled gracefully.
-
-**Preconditions:**
-
-- Backend is configured so `/getVehRef` returns a `4xx` or `5xx` status (e.g. temporary test configuration).
-
-**Steps:**
-
-1. Open the SPA (or reload), ensuring readiness still passes.
-2. Observe the behaviour after `/getVehRef` is called.
-
-**Expected Result:**
-
-- `GET /getVehRef` returns a non-2xx status.
-- The app:
-  - Shows an error message derived from the response body where possible, or a generic “Request failed: …” message.
-  - Keeps the vehicle selection control disabled or clearly unavailable.
-  - Does not crash.
-
----
-
-### TP-05 – Load public line names list
-
-**Related User Story:** US-4  
 **Objective:** Verify that the line names list is requested and displayed.
 
 **Preconditions:**
@@ -217,37 +164,16 @@ Each test case below includes:
 - `GET /getPubLineName` is called once and returns `200 OK`.
 - The response is a JSON array of strings.
 - The “Line” selector is populated with these names.
-- If non-empty:
-  - Either no line is pre-selected, **or**
-  - A sensible default is shown.
+- If non-empty, the first entry is selected by default
+
+**Screenshot:**
+
+![line list loaded](screenshots/image-3.png)
 
 ---
 
-### TP-06 – Handle failure when loading line names list
+### TP-04 – Switch between Vehicle and Line modes
 
-**Related User Story:** US-4, US-10  
-**Objective:** Confirm that errors loading line names are handled gracefully.
-
-**Preconditions:**
-
-- Backend configured so `/getPubLineName` returns `4xx` or `5xx`.
-
-**Steps:**
-
-1. Open or reload the SPA with backend ready but `/getPubLineName` failing.
-2. Observe the UI after the list request.
-
-**Expected Result:**
-
-- The app shows a user-visible error message.
-- The line selector remains disabled or clearly unavailable.
-- No map data is loaded based on line selection.
-
----
-
-### TP-07 – Switch between Vehicle and Line modes
-
-**Related User Story:** US-5  
 **Objective:** Verify correct behaviour when switching between modes.
 
 **Preconditions:**
@@ -270,13 +196,12 @@ Each test case below includes:
   - Line selector is enabled/visible.
   - Vehicle selector is disabled or visually de-emphasised.
 - No errors or crashes occur while toggling.
-- Map content is only updated when a valid selection is made (not just by switching modes alone).
+- Map content is updated to reflect the current selection.
 
 ---
 
-### TP-08 – View trip for selected vehicle
+### TP-05 – View trip for selected vehicle
 
-**Related User Story:** US-6, US-8  
 **Objective:** Verify that selecting a vehicle loads and displays its trip.
 
 **Preconditions:**
@@ -294,48 +219,46 @@ Each test case below includes:
 
 **Expected Result:**
 
-- The app issues `GET /getBusTripByVehRef/{vehRef}` (with URL-encoded `vehRef`).
+- The app issues `GET /getBusTripByVehRef/{vehRef}`.
 - The response is a `200 OK` with a valid GeoJSON FeatureCollection.
-- Existing trip display (if any) is cleared.
+- Existing trip display is cleared.
 - The new trip geometry is drawn on the map.
 - Map automatically pans/zooms to fully contain the trip path.
-- No JavaScript errors are thrown in the console.
+
+**Screenshot:**
+
+![valid vehicle data](screenshots/image-4.png)
 
 ---
 
-### TP-09 – Vehicle trip with empty or invalid geometry
+### TP-06 – Vehicle trip with empty or invalid geometry
 
-**Related User Story:** US-6, US-8, US-10  
 **Objective:** Ensure the app handles empty or invalid trip responses for a vehicle.
 
 **Preconditions:**
 
-- Backend configured such that a specific `vehRef` returns:
-  - Either an empty FeatureCollection (`features: []`), or
-  - A `4xx/5xx` error.
+- Turn off the wifi of the device to prevent it from receiving responses.
 
 **Steps:**
 
 1. Switch to “Vehicle” mode.
-2. Select the `vehRef` configured for this test.
+2. Select any `vehRef`.
 3. Observe behaviour and the map.
 
 **Expected Result:**
 
-- For empty but valid GeoJSON:
-  - No route is displayed.
-  - Map view is not changed dramatically (no wild zoom).
-  - The app does not crash.
-  - Optionally, an informational message may inform that no data is available.
-- For `4xx/5xx` responses:
+  - Map is cleared of previous data points.
   - Error message is shown based on the response text or generic status string.
-  - No outdated or partial route is displayed from this failed request.
+  - No new map route is drawn.
+
+**Screenshot:**
+
+![invalid vehicle data](screenshots/image-5.png)
 
 ---
 
-### TP-10 – View trip for selected line
+### TP-7 – View trip for selected line
 
-**Related User Story:** US-7, US-8  
 **Objective:** Verify that selecting a line loads and displays its trip(s).
 
 **Preconditions:**
@@ -356,20 +279,21 @@ Each test case below includes:
 - The app issues `GET /getBusTripByPubLineName/{pubLineName}`.
 - Response is `200 OK` with GeoJSON FeatureCollection.
 - All returned features are rendered on the map.
-- The map fits bounds to show all features (lines, multi-lines, etc.).
-- No errors in the console.
+- The map fits bounds to show all features (lines, multi-lines, etc).
+
+**Screenshot:**
+
+![valid line data](screenshots/image-6.png)
 
 ---
 
-### TP-11 – Line trip error and empty result handling
+### TP-8 – Line trip error and empty result handling
 
-**Related User Story:** US-7, US-8, US-10  
 **Objective:** Ensure the app handles empty or failed trip responses for a line.
 
 **Preconditions:**
 
-- Backend configured with:
-  - A `pubLineName` that returns an empty FeatureCollection or error.
+- Turn off the wifi on the device.
 
 **Steps:**
 
@@ -379,44 +303,17 @@ Each test case below includes:
 
 **Expected Result:**
 
-- For empty but valid GeoJSON:
-  - No route is drawn.
-  - No unexpected zoom.
-  - Optional “no data” message is acceptable.
-- For `4xx/5xx`:
+  - Map is cleared of previous data points.
   - An error message is displayed.
-  - Existing maps data is not replaced by invalid/partial data from this request.
+  - No new route is drawn on the map.
 
+**Screenshot:**
+
+![invalid line data](screenshots/image-7.png)
 ---
 
-### TP-12 – Auto-fit map on trip load
+### TP-9 – Handle rapid selections and concurrent requests
 
-**Related User Story:** US-8  
-**Objective:** Confirm that the map auto-fits to the route for both vehicle and line trips.
-
-**Preconditions:**
-
-- At least one `vehRef` and one `pubLineName` with known valid, visible geometry.
-
-**Steps:**
-
-1. In “Vehicle” mode, select a valid `vehRef`.
-2. After the trip is rendered, note the map extent and zoom.
-3. Switch to “Line” mode and select a valid `pubLineName` whose route covers a different area.
-4. Observe the new map extent.
-
-**Expected Result:**
-
-- After each successful trip load:
-  - The map view adjusts to include all geometry from that trip.
-  - The user can immediately see the path without panning/zooming.
-- No extreme zoom-out (e.g. whole world) occurs unless the geometry genuinely requires it.
-
----
-
-### TP-13 – Handle rapid selections and concurrent requests
-
-**Related User Story:** US-9  
 **Objective:** Verify that only the most recent selection’s data is rendered if multiple requests overlap.
 
 **Preconditions:**
@@ -435,13 +332,11 @@ Each test case below includes:
 - Multiple requests are in-flight and may complete out of order.
 - The SPA renders only the trip corresponding to the **last** selection made by the user.
 - Earlier, slower responses are ignored and do not overwrite the latest displayed route.
-- No console errors are thrown.
 
 ---
 
-### TP-14 – Search for a specific vehicle
+### TP-10 – Search for a specific vehicle
 
-**Related User Story:** US-11  
 **Objective:** Verify search/filter behaviour in the vehicle selector.
 
 **Preconditions:**
@@ -453,26 +348,36 @@ Each test case below includes:
 
 1. Ensure “Vehicle” mode is active and the list is loaded.
 2. Focus the vehicle selector or associated search input.
-3. Type a partial string that matches some but not all vehicle references (e.g. `123`).
+3. Type a partial string that matches some but not all vehicle references (e.g. `883`).
 4. Observe the list of options.
 5. Select one of the filtered results.
-6. Clear the search input.
+6. Enter a random string that matches no lines (e.g. `asdfasf`).
+
 
 **Expected Result:**
 
-- While typing:
-  - The list is filtered to only those `vehRef` values whose text contains the search string (case-insensitive).
-- On choosing a filtered result:
-  - The selected `vehRef` becomes the active value.
-  - Trip data is requested and rendered as in TP-08.
-- When the search input is cleared:
-  - The full original vehicle list is visible again.
+- Matching text filters the list to only relevant line names.
+- Selecting a filtered line loads its trip normally (TP-5).
+- For a query with no matches:
+  - The UI shows the text `No options`.
+  - No selection can be made.
+- Clearing the search input restores the full line list.
+
+**Screenshot:**
+
+Search with valid options:
+![vehicle search](screenshots/image-8.png)
+
+Search with no valid options:
+![vehicle no options available](screenshots/image-10.png)
+
+Cleared input:
+![no input full list](screenshots/image-11.png)
 
 ---
 
-### TP-15 – Search for a specific line
+### TP-11 – Search for a specific line
 
-**Related User Story:** US-11  
 **Objective:** Verify search/filter behaviour in the line selector.
 
 **Preconditions:**
@@ -484,25 +389,28 @@ Each test case below includes:
 
 1. Switch to “Line” mode.
 2. Focus the line selector or its search input.
-3. Type partial text that matches some but not all lines (e.g. `M15`).
+3. Type partial text that matches some but not all lines (e.g. `67`).
 4. Observe the filtered options.
 5. Select a matching line and verify trip loading.
-6. Enter a random string that matches no lines (e.g. `ZZZ123`).
+6. Enter a random string that matches no lines (e.g. `asdfasf`).
 
 **Expected Result:**
 
 - Matching text filters the list to only relevant line names.
-- Selecting a filtered line loads its trip normally (TP-10).
+- Selecting a filtered line loads its trip normally (TP-7).
 - For a query with no matches:
-  - The UI shows an empty state with something like “No matching lines”.
-  - No invalid selection can be made.
+  - The UI shows the text `No options`.
+  - No selection can be made.
 - Clearing the search input restores the full line list.
+
+**Screenshot:**
+
+![line search](screenshots/image-9.png)
 
 ---
 
-### TP-16 – Persist vehicle/line selection & mode across reloads
+### TP-12 – Persist vehicle/line selection & mode across reloads
 
-**Related User Story:** US-12  
 **Objective:** Ensure that the last selection and mode are preserved after reloading the page in the same browser.
 
 **Preconditions:**
@@ -534,70 +442,10 @@ Each test case below includes:
 
 ---
 
-### TP-17 – Handle persistence when previously selected item no longer exists
-
-**Related User Story:** US-12  
-**Objective:** Ensure the app behaves correctly when saved selection is no longer in the list.
-
-**Preconditions:**
-
-- Backend ready.
-- Ability to modify backend data (or simulate a change) so that:
-  - A previously selected `vehRef` or line no longer appears in the returned list.
-
-**Steps:**
-
-1. With current backend data, select a specific `vehRef` in “Vehicle” mode and reload to confirm persistence works.
-2. Change the backend (or environment) so this `vehRef` is removed from `/getVehRef`.
-3. Reload the SPA in the same browser.
-4. Observe the mode and any selection defaults.
-5. Repeat for a line in “Line” mode if possible.
-
-**Expected Result:**
-
-- The application does **not** crash.
-- The previously saved but now invalid `vehRef`/line is not selected.
-- The app shows a sensible default:
-  - No selection, or
-  - First available valid entry.
-- No broken API calls are made using non-existent IDs.
-
----
-
-## 6. Test Execution & Reporting Guidelines
+## 6. Test Execution
 
 - **Execution Order:**
-  - Run TP-01 and TP-02 first to validate environment.
-  - Then TP-03 to TP-17 in sequence or grouped by feature.
-- **Logging:**
-  - Record for each test:
-    - Date
-    - Tester
-    - Environment (e.g. `dev`, `staging`, `prod`)
-    - Browser/version
-    - Status: Pass / Fail / Blocked
-    - Notes and screenshots for failures.
-- **Defects:**
-  - Link failing tests to bug tickets.
-  - Include:
-    - Steps to reproduce
-    - Expected vs actual results
-    - Environment details
-    - Any console/network logs.
-
----
-
-## 7. Regression Testing
-
-For any code change in:
-
-- API endpoints, or
-- Core SPA controls (mode toggle, selectors, map rendering),
-
-the following tests should be run at minimum:
-
-- TP-01, TP-03, TP-05, TP-07, TP-08, TP-10, TP-12, TP-13, TP-14, TP-15, TP-16.
-
-This ensures the main user flows (ready check, list loading, selection, search, map display, persistence) continue to work after modifications.
+  - Test TP-1 to TP-3 first to validate environment.
+  - Then TP-4 to TP-12 in sequence.
 
 ---

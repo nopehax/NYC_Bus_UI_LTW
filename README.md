@@ -26,4 +26,4 @@ npm run dev
 ```
 
 ### Screenshot
-![demo_screenshot](./docs/demo_screenshot.png)
+![demo_screenshot](./docs/screenshots/demo_screenshot.png)
