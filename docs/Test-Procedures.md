@@ -107,9 +107,11 @@ Each test case below includes:
 **Screenshot:**
 
 Server ready:
+
 ![server ready](screenshots/image.png)
 
 Server not ready:
+
 ![server not ready](screenshots/image-1.png)
 
 ---
@@ -366,12 +368,15 @@ Server not ready:
 **Screenshot:**
 
 Search with valid options:
+
 ![vehicle search](screenshots/image-8.png)
 
 Search with no valid options:
+
 ![vehicle no options available](screenshots/image-10.png)
 
 Cleared input:
+
 ![no input full list](screenshots/image-11.png)
 
 ---
