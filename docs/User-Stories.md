@@ -31,6 +31,9 @@
 
 ## 2. User Stories & Acceptance Criteria
 
+**Personas:** 
+  1. `user`
+
 ### US-1 – Check server readiness on startup
 
 **As a** user  
@@ -75,7 +78,7 @@
   - When the request completes with error  
   - Then the application must:
     - Show an error message, and  
-    - Leave the vehicle selection control disabled or clearly marked as unavailable.
+    - Leave the vehicle selection control disabled.
 
 ---
 
@@ -100,7 +103,7 @@
   - When the request completes with error  
   - Then the application must:
     - Show an error message, and  
-    - Leave the line selection control disabled or clearly marked as unavailable.
+    - Leave the line selection control disabled.
 
 ---
 
@@ -131,7 +134,7 @@
 - Given there are **no** matching results for my search text  
   - When the list is filtered  
   - Then the UI must:
-    - Show an empty result state (e.g. “No matching vehicles” or “No matching lines”), and  
+    - Show an empty result state (i.e. text with `"No option"`), and  
     - Prevent me from making an invalid selection.
 
 - Given I clear the search text  
@@ -158,14 +161,14 @@
 - Given I switch to “Vehicle” mode  
   - When the mode becomes active  
   - Then:
-    - The vehicle selection control must be enabled/visible, and  
-    - The line selection control must be disabled or visually de-emphasised.
+    - The vehicle selection control must be enabled and visible, and  
+    - The line selection control must be visually de-emphasised.
 - Given I switch to “Line” mode  
   - When the mode becomes active  
   - Then:
-    - The line selection control must be enabled/visible, and  
-    - The vehicle selection control must be disabled or visually de-emphasised.
-- Switching modes must **not** cause the application to crash, and the map should handle the absence of a current selection gracefully (e.g. show no new data until a selection is made).
+    - The line selection control must be enabled and visible, and  
+    - The vehicle selection control must be visually de-emphasised.
+- Switching modes must **not** cause the application to crash.
 
 ---
 
@@ -179,19 +182,13 @@
 
 - Given the vehicle list has been loaded and “Vehicle” mode is active  
   - When I select a specific vehicle from the list  
-  - Then the application must request `/getBusTripByVehRef/{vehRef}` using that value.
+  - Then the application must request `/getBusTripByVehRef/{vehRef}` using that value, and
+  - Clear any previously displayed trip related to another selection.
 - Given the server returns a valid GeoJSON FeatureCollection  
   - When the response is received  
   - Then the application must:
-    - Clear any previously displayed trip related to another selection,  
     - Render the new trip geometry on the map, and  
     - Automatically adjust the map view to fit the full extent of the trip.
-- Given the server returns a valid, but empty, GeoJSON (e.g. `features: []`)  
-  - When the response is received  
-  - Then the application must:
-    - Not crash,  
-    - Display no route geometry, and  
-    - Optionally show a message indicating that no trip data is available for that vehicle.
 - Given the trip request for a vehicle fails (network or server error)  
   - When the request completes with error  
   - Then the application must:
@@ -210,11 +207,11 @@
 
 - Given the line list has been loaded and “Line” mode is active  
   - When I select a line from the list  
-  - Then the application must request `/getBusTripByPubLineName/{pubLineName}` using that value.
+  - Then the application must request `/getBusTripByPubLineName/{pubLineName}` using that value, and
+  - Clear any previously displayed trip related to another selection.  
 - Given the server returns a valid GeoJSON FeatureCollection  
   - When the response is received  
   - Then the application must:
-    - Clear any previously displayed trip related to another selection,  
     - Render all returned features for that line on the map, and  
     - Automatically adjust the map view to fit the full extent of the returned geometry.
 - Given the response contains multiple features (e.g. branches or directions)  
@@ -228,29 +225,55 @@
 
 ---
 
-### US-8 – Auto-fit the map to loaded trip
+### US-8 – Highlight route elements on hover
 
-**As a** user  
-**I want** the map to automatically focus on the selected route  
-**So that** I can immediately see where the bus trip is without manual navigation
+**As a** user
+**I want** points and lines on the map to change colour when I hover over them
+**So that** I can more clearly see which element I am focusing on
 
 **Acceptance Criteria**
 
-- Given I have successfully loaded trip data for a vehicle or line  
-  - When the GeoJSON is rendered  
-  - Then the map view must zoom/pan to show all visible trip geometry.
-- Given the trip lies within the NYC area  
-  - When the map fits bounds  
-  - Then the user must see the route without needing to adjust zoom or pan manually.
-- Given the trip has no valid geometry (e.g. `features: []`)  
-  - When mapping is attempted  
-  - Then the app must:
-    - Not change the map view dramatically (e.g. no zoom to global extent), and  
-    - Not throw runtime errors.
+- Given a point or line is visible on the map/graph
+  - When the user hovers the mouse over that point or line
+  - Then:
+    - That specific element must change to a highlight colour (i.e. bright green #00FF00).
+- Given a different point or line is currently highlighted
+  - When the user moves the mouse hover to another point or line
+  - Then:
+    - The previously highlighted element must revert to its default colour
+    - And the newly hovered element must change to the highlight colour.
+- Given a point or line is highlighted because of hover
+  - When the user moves the mouse away so it is no longer over any interactive element
+  - Then:
+    - All elements must revert to their default colours.
 
 ---
 
-### US-9 – Handle concurrent/frequent selections safely
+### US-9 – View details for a route element
+
+**As a** user  
+**I want** to see additional details when I click on a point or line  
+**So that** I can better understand the information represented by that element  
+
+**Acceptance Criteria**
+
+- Given a point or line is visible on the map/graph  
+  - When the user clicks on that point or line  
+  - Then:
+    - The application must display a details panel for that specific element that contains additional information of that element.
+- Given the details panel is displayed for one element  
+  - When the user clicks on a different point or line,
+  - Then:
+    - The previously shown details must be replaced  
+    - And the panel must show the details for the newly clicked element.
+- Given the details panel is displayed  
+  - When the user clicks outside any point or line (e.g. on an empty area of the map/graph or a close button)  
+  - Then:
+    - The details panel/tooltip must be hidden.
+
+---
+
+### US-10 – Handle concurrent/frequent selections safely
 
 **As a** user  
 **I want** the map to always show the route for my most recent selection  
@@ -267,7 +290,7 @@
 
 ---
 
-### US-10 – Preserve my current selection across reloads
+### US-11 – Preserve my current selection across reloads
 
 **As a** user  
 **I want** my current vehicle/line selection and mode to be remembered  
@@ -280,7 +303,7 @@
   - When I reload the page in the same browser  
   - Then:
     - The application must start in “Vehicle” mode, and  
-    - The previously selected vehicle must be pre-selected (if it still exists in the list), and  
+    - The previously selected vehicle must be pre-selected, and  
     - The corresponding trip data must be automatically requested and displayed.
 
 - Given I have selected a specific line in “Line” mode  
@@ -288,7 +311,7 @@
   - When I reload the page in the same browser  
   - Then:
     - The application must start in “Line” mode, and  
-    - The previously selected line must be pre-selected (if it still exists in the list), and  
+    - The previously selected line must be pre-selected, and  
     - The corresponding trip data must be automatically requested and displayed.
 
 - Given I change my selection (vehicle or line)  
