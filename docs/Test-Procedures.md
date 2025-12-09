@@ -65,12 +65,13 @@ In scope:
 4. **Search tests:** Validate search/filter behaviour in both lists.
 5. **Persistence tests:** Validate that the last selection and mode are preserved across reloads.
 6. **Error handling:** Validate behaviour for network/API failures and invalid data.
-7. **Regression:** Re-run core tests (US-1 to US-7, US-11, US-12) after changes.
+7. **Regression:** Re-run core tests after changes.
 
 Each test case below includes:
 
 - ID
 - Objective
+- Related User Stories
 - Preconditions
 - Steps
 - Expected Result
@@ -82,6 +83,8 @@ Each test case below includes:
 ### TP-01 – Backend readiness check
 
 **Objective:** Verify that the app checks backend readiness on startup and responds appropriately.
+
+**User Stories:** US-01
 
 **Preconditions:**
 
@@ -120,6 +123,8 @@ Server not ready:
 
 **Objective:** Verify that the vehicle reference list is requested and displayed.
 
+**User Stories:** US-02
+
 **Preconditions:**
 
 - Backend running and `/ready` returns `{"status":"Ready"}`.
@@ -148,6 +153,8 @@ Server not ready:
 ### TP-03 – Load public line names list
 
 **Objective:** Verify that the line names list is requested and displayed.
+
+**User Stories:** US-03
 
 **Preconditions:**
 
@@ -178,6 +185,8 @@ Server not ready:
 
 **Objective:** Verify correct behaviour when switching between modes.
 
+**User Stories:** US-05, US-06, US-07
+
 **Preconditions:**
 
 - Backend ready; lists for both vehicles and lines are loaded correctly.
@@ -205,6 +214,8 @@ Server not ready:
 ### TP-05 – View trip for selected vehicle
 
 **Objective:** Verify that selecting a vehicle loads and displays its trip.
+
+**User Stories:** US-06
 
 **Preconditions:**
 
@@ -237,6 +248,8 @@ Server not ready:
 
 **Objective:** Ensure the app handles empty or invalid trip responses for a vehicle.
 
+**User Stories:** US-06
+
 **Preconditions:**
 
 - Turn off the wifi of the device to prevent it from receiving responses.
@@ -262,6 +275,8 @@ Server not ready:
 ### TP-7 – View trip for selected line
 
 **Objective:** Verify that selecting a line loads and displays its trip(s).
+
+**User Stories:** US-07
 
 **Preconditions:**
 
@@ -293,6 +308,8 @@ Server not ready:
 
 **Objective:** Ensure the app handles empty or failed trip responses for a line.
 
+**User Stories:** US-07
+
 **Preconditions:**
 
 - Turn off the wifi on the device.
@@ -318,6 +335,8 @@ Server not ready:
 
 **Objective:** Verify that only the most recent selection’s data is rendered if multiple requests overlap.
 
+**User Stories:** US-10
+
 **Preconditions:**
 
 - Backend ready.
@@ -340,6 +359,8 @@ Server not ready:
 ### TP-10 – Search for a specific vehicle
 
 **Objective:** Verify search/filter behaviour in the vehicle selector.
+
+**User Stories:** US-04
 
 **Preconditions:**
 
@@ -385,6 +406,8 @@ Cleared input:
 
 **Objective:** Verify search/filter behaviour in the line selector.
 
+**User Stories:** US-04
+
 **Preconditions:**
 
 - Backend ready.
@@ -417,6 +440,8 @@ Cleared input:
 ### TP-12 – Persist vehicle/line selection & mode across reloads
 
 **Objective:** Ensure that the last selection and mode are preserved after reloading the page in the same browser.
+
+**User Stories:** US-11
 
 **Preconditions:**
 
