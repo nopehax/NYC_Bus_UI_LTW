@@ -34,7 +34,7 @@
 **Personas:** 
   1. `user`
 
-### US-1 – Check server readiness on startup
+### US-01 – Check server readiness on startup
 
 **As a** user  
 **I want** the application to verify the backend server is ready  
@@ -44,20 +44,24 @@
 
 - Given I open the application  
   - When the app loads  
-  - Then it must call the server’s readiness endpoint (`/ready`).
-- Given the server returns `{"status": "Ready"}`  
-  - When the readiness check completes  
-  - Then the application must proceed to load vehicle and line lists without showing an error.
-- Given the server returns a non-"Ready" status or a non-2xx HTTP code  
+  - Then:
+    - I should see a clear indication that it is checking whether the server is available.
+
+- Given the server returns `Ready  
+  - When the readiness check completes
+  - Then:
+    - The application starts to load the content without any error messages.
+
+- Given the server returns a non-"Ready" status
   - When the readiness check completes  
   - Then the application must:
     - Stop further data loading (no list or trip requests), and  
-    - Display a visible message indicating the server is not ready or unavailable.
-    - Display a retry button to reload the page.
+    - Display a visible message indicating the server is not ready.
+    - Display a `Retry` button to reload the page.
 
 ---
 
-### US-2 – View available vehicle references
+### US-02 – View available vehicle references
 
 **As a** user  
 **I want** to see a list of available vehicle references  
@@ -67,13 +71,13 @@
 
 - Given the backend is ready  
   - When the app loads  
-  - Then it must request the vehicle reference list (`/getVehRef`) once.
-- Given the server returns a JSON array of strings  
-  - When the list is loaded successfully  
-  - Then the application must populate a “Vehicle” selection control with those values.
+  - Then:
+    - I should see a “Vehicle” selection control that can be opened to show a list of vehicle references (if any are available).
+
 - Given the list is non-empty  
   - When the user first access the webpage,
-  - the first entry is selected, by default.
+  - the first entry is selected and loaded, by default.
+
 - Given the vehicle list request fails  
   - When the request completes with error  
   - Then the application must:
@@ -82,7 +86,7 @@
 
 ---
 
-### US-3 – View available public line names
+### US-03 – View available public line names
 
 **As a** user  
 **I want** to see a list of available public line names  
@@ -92,13 +96,13 @@
 
 - Given the backend is ready  
   - When the app loads  
-  - Then it must request the public line name list (`/getPubLineName`) once.
-- Given the server returns a JSON array of strings  
-  - When the list is loaded successfully  
-  - Then the application must populate a “Line” selection control with those values.
+  - Then:
+    - I should see a “Line” selection control that can be opened to show a list of names (if any are available).
+
 - Given the line list is non-empty  
   - When the user first access the webpage,
-  - the first entry is selected, by default.
+  - the first entry is selected and loaded, by default.
+
 - Given the line list request fails  
   - When the request completes with error  
   - Then the application must:
@@ -107,7 +111,7 @@
 
 ---
 
-### US-4 – Search for a specific vehicle or line
+### US-04 – Search for a specific vehicle or line
 
 **As a** user  
 **I want** to search within the list of vehicle references or line names  
@@ -116,7 +120,7 @@
 **Acceptance Criteria**
 
 - Given I am on the main screen and the vehicle list has loaded  
-  - When I focus the “Vehicle” selector or its associated search input  
+  - When I focus the “Vehicle” selector 
   - And I start typing a partial or full vehicle reference (e.g. `1234`)  
   - Then the list of options must be filtered to only show vehicle references that contain the typed text (case-insensitive).
 
@@ -129,7 +133,7 @@
   - When the list is filtered  
   - Then:
     - I must be able to select one of the filtered results, and  
-    - Upon selection, the corresponding trip data must be requested and displayed as defined in US-6 and US-7.
+    - Upon selection, the corresponding trip data must be requested and displayed as defined in US-06 and US-07.
 
 - Given there are **no** matching results for my search text  
   - When the list is filtered  
@@ -141,13 +145,9 @@
   - When the search field becomes empty  
   - Then the full list of vehicles/lines must be visible again.
 
-- The search/filtering behaviour must:
-  - Work consistently for both “Vehicle” and “Line” modes, and  
-  - Not cause additional unnecessary API calls (filtering is done on the already-loaded lists).
-
 ---
 
-### US-5 – Switch between vehicle and line modes
+### US-05 – Switch between vehicle and line modes
 
 **As a** user  
 **I want** to switch between selecting a specific vehicle and selecting a bus line  
@@ -158,21 +158,22 @@
 - Given I am on the main screen  
   - When I toggle the mode (e.g. between “Vehicle” and “Line”)  
   - Then the application must clearly indicate which mode is active.
+
 - Given I switch to “Vehicle” mode  
   - When the mode becomes active  
   - Then:
     - The vehicle selection control must be enabled and visible, and  
     - The line selection control must be visually de-emphasised.
+
 - Given I switch to “Line” mode  
   - When the mode becomes active  
   - Then:
     - The line selection control must be enabled and visible, and  
     - The vehicle selection control must be visually de-emphasised.
-- Switching modes must **not** cause the application to crash.
 
 ---
 
-### US-6 – View trip for a selected vehicle
+### US-06 – View trip for a selected vehicle
 
 **As a** user  
 **I want** to select a vehicle reference and see its trip on the map  
@@ -182,14 +183,15 @@
 
 - Given the vehicle list has been loaded and “Vehicle” mode is active  
   - When I select a specific vehicle from the list  
-  - Then the application must request `/getBusTripByVehRef/{vehRef}` using that value, and
-  - Clear any previously displayed trip related to another selection.
+  - Then the map must update and clear any previously displayed trip related to the previous selection.
+
 - Given the server returns a valid GeoJSON FeatureCollection  
   - When the response is received  
   - Then the application must:
     - Render the new trip geometry on the map, and  
     - Automatically adjust the map view to fit the full extent of the trip.
-- Given the trip request for a vehicle fails (network or server error)  
+
+- Given the trip request for a vehicle fails   
   - When the request completes with error  
   - Then the application must:
     - Display an error message, and  
@@ -197,7 +199,7 @@
 
 ---
 
-### US-7 – View trip for a selected line
+### US-07 – View trip for a selected line
 
 **As a** user  
 **I want** to select a public line name and see the trip(s) on the map  
@@ -207,16 +209,15 @@
 
 - Given the line list has been loaded and “Line” mode is active  
   - When I select a line from the list  
-  - Then the application must request `/getBusTripByPubLineName/{pubLineName}` using that value, and
-  - Clear any previously displayed trip related to another selection.  
+  - Then:
+    - The map must update and clear any previously displayed trip related to the previous selection.  
+
 - Given the server returns a valid GeoJSON FeatureCollection  
   - When the response is received  
   - Then the application must:
     - Render all returned features for that line on the map, and  
     - Automatically adjust the map view to fit the full extent of the returned geometry.
-- Given the response contains multiple features (e.g. branches or directions)  
-  - When rendered on the map  
-  - Then all features must be visible within the fitted bounds (user should not need to manually search for them).
+
 - Given the trip request for a line fails  
   - When the request completes with error  
   - Then the application must:
@@ -225,7 +226,7 @@
 
 ---
 
-### US-8 – Highlight route elements on hover
+### US-08 – Highlight route elements on hover
 
 **As a** user
 **I want** points and lines on the map to change colour when I hover over them
@@ -236,12 +237,14 @@
 - Given a point or line is visible on the map/graph
   - When the user hovers the mouse over that point or line
   - Then:
-    - That specific element must change to a highlight colour (i.e. bright green #00FF00).
+    - That specific element must change to a highlight colour (i.e. bright green).
+
 - Given a different point or line is currently highlighted
   - When the user moves the mouse hover to another point or line
   - Then:
     - The previously highlighted element must revert to its default colour
     - And the newly hovered element must change to the highlight colour.
+
 - Given a point or line is highlighted because of hover
   - When the user moves the mouse away so it is no longer over any interactive element
   - Then:
@@ -249,7 +252,7 @@
 
 ---
 
-### US-9 – View details for a route element
+### US-09 – View details for a route element
 
 **As a** user  
 **I want** to see additional details when I click on a point or line  
@@ -261,15 +264,17 @@
   - When the user clicks on that point or line  
   - Then:
     - The application must display a details panel for that specific element that contains additional information of that element.
+
 - Given the details panel is displayed for one element  
   - When the user clicks on a different point or line,
   - Then:
     - The previously shown details must be replaced  
     - And the panel must show the details for the newly clicked element.
+
 - Given the details panel is displayed  
-  - When the user clicks outside any point or line (e.g. on an empty area of the map/graph or a close button)  
+  - When the user clicks outside any point or line (e.g. on an empty area of the map or a close button)  
   - Then:
-    - The details panel/tooltip must be hidden.
+    - The details panel must be hidden.
 
 ---
 
@@ -282,11 +287,9 @@
 **Acceptance Criteria**
 
 - Given I rapidly change selections (vehicles and/or lines)  
-  - When multiple API requests are in-flight  
-  - Then:
-    - Only the data from the most recent selection must be rendered on the map, and  
-    - Any slower, earlier responses must be ignored when they arrive.
-- The application must not show conflicting messages or overlapping routes from different selections if they originate from different requests.
+  - Only the data from the most recent selection must be rendered on the map, and  
+  - Any slower, earlier responses must be ignored when they arrive, and
+  - The application must not show conflicting messages or overlapping routes from different selections if they originate from different requests.
 
 ---
 
@@ -315,8 +318,7 @@
     - The corresponding trip data must be automatically requested and displayed.
 
 - Given I change my selection (vehicle or line)  
-  - When the change is confirmed (e.g. selection dropdown closes)  
-  - Then the new selection and mode must replace the previous saved values for future reloads.
+  - The new selection and mode must replace the previous saved values for future reloads.
 
 - The persistence behaviour must:
   - Only apply within the same browser profile (i.e. not shared across devices), and  
